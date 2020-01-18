@@ -17,8 +17,8 @@ class Animation(models.Model):
     author = models.CharField(max_length=30,verbose_name="Autor kodu")
     date = models.DateTimeField(verbose_name="Data dodania")
     code = models.CharField(max_length=10000,unique=True,verbose_name="Kod")
-    approved = models.BooleanField(default=False,verbose_name="Status zatwierdzenia")
-    date_approved = models.DateField(verbose_name="Data zatwierdzenia")
+    approved = models.BooleanField(default=False,blank=True,verbose_name="Status zatwierdzenia")
+    date_approved = models.DateField(blank=True,verbose_name="Data zatwierdzenia")
     id_lang = models.ForeignKey(Lang,on_delete=models.CASCADE)
     id_type = models.ForeignKey(Type,on_delete=models.CASCADE)
     def __str__(self):
