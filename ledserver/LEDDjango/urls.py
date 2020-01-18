@@ -19,7 +19,4 @@ from django.urls import include,path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('Led/', include('Led.urls')),
-   # path('animations/list', api.animlist),
-   # path('animations/post', api.animpost),
-   # path('animations/<int:id>' api.animget),
 ]
