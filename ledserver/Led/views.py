@@ -15,9 +15,9 @@ def anim_list(request):
         animations = Animation.objects.all()
         serializer = AnimationSerializer(animations, many=True)
         return JsonResponse(serializer.data, safe=False)
-def anim_get(request, id_r):
+def anim_get(request, name_requested):
     if request.method == 'GET':
-        animations = Animation.objects.get(id=id_r)
+        animations = Animation.objects.get(name=name_requested)
         serializer = AnimationSerializer(animations, many=False)
         return JsonResponse(serializer.data, safe=False)
 def anim_post(request):
