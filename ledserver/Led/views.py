@@ -17,9 +17,15 @@ def anim_list(request):
         return JsonResponse(serializer.data, safe=False)
 def anim_get(request, name_requested):
     if request.method == 'GET':
-        animations = Animation.objects.get(name=name_requested)
-        serializer = AnimationSerializer(animations, many=False)
-        return JsonResponse(serializer.data, safe=False)
+        try:
+            animations = Animation.objects.get(name=name_requested)
+            serializer = AnimationSerializer(animations, many=False)
+            return JsonResponse(serializer.data, safe=False)
+        except Animation.DoesNotExist:
+            # todo: determine what response frontend wants
+            return HttpResponse("This animation does not exist")
+    else:
+        return HttpResponse("Error: Only GET is supported")
 def anim_post(request):
     if request.method == 'POST':
         serializer = AnimationSerializer(data=request.data)
