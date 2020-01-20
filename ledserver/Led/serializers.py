@@ -14,9 +14,14 @@ class TypeSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class AnimationSerializer(serializers.ModelSerializer):
-    lang_name = serializers.CharField(source='id_lang', read_only=True)
-    type_name = serializers.CharField(source='id_type', read_only=True)
+    lang_name = serializers.CharField(source='id_lang')
+    type_name = serializers.CharField(source='id_type')
     class Meta:
         model = Animation
         fields = ['name', 'author', 'date', 'code', 'approved', 'date_approved', 'lang_name', 'type_name']
         depth = 1
+
+class AnimationSerializerSave(serializers.ModelSerializer):
+    class Meta:
+        model = Animation
+        fields = ['name', 'author', 'date', 'code', 'approved', 'date_approved', 'id_lang', 'id_type']

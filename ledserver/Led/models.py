@@ -15,8 +15,8 @@ class Lang(models.Model):
 class Animation(models.Model):
     name = models.CharField(max_length=30,unique=True,verbose_name="Nazwa")
     author = models.CharField(max_length=30,verbose_name="Autor kodu")
-    date = models.DateTimeField(verbose_name="Data dodania")
-    code = models.CharField(max_length=10000,unique=True,verbose_name="Kod")
+    date = models.DateTimeField(auto_now_add=True, blank=True, verbose_name="Data dodania")
+    code = models.CharField(max_length=10000,unique=False,verbose_name="Kod")
     approved = models.BooleanField(null=True, default=False,blank=True,verbose_name="Status zatwierdzenia")
     date_approved = models.DateField(null=True, blank=True,verbose_name="Data zatwierdzenia")
     id_lang = models.ForeignKey(Lang,on_delete=models.CASCADE)

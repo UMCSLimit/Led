@@ -1,10 +1,15 @@
 from django.http import HttpResponse
 from django.http import JsonResponse
 from Led.models import Animation, Type, Lang
-from Led.serializers import AnimationSerializer, TypeSerializer, LangSerializer
+from Led.serializers import AnimationSerializer, TypeSerializer, LangSerializer, AnimationSerializerSave
 from rest_framework import viewsets
+from rest_framework.response import Response
+from rest_framework import status
+
 #for testing only
 from django.views.decorators.csrf import csrf_exempt
+from rest_framework.decorators import api_view
+
 
 # Create your views here.
 def index(request):
@@ -29,9 +34,13 @@ def anim_get(request, name_requested):
             return HttpResponse("This animation does not exist")
     else:
         return HttpResponse("Error: Only GET is supported")
+
+@api_view(['GET', 'POST'])
+@csrf_exempt
 def anim_post(request):
     if request.method == 'POST':
-        serializer = AnimationSerializer(data=request.data, context={'request': request})
+        print(request.data)
+        serializer = AnimationSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
