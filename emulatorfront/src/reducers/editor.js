@@ -1,5 +1,5 @@
 const initalState = {
-  code: "",
+  code: "async function loop() {\n\t// Your code goes here\n\tawait sleep(46);\n\tNextFrame();\n}",
   run: false
 }
 

@@ -16,7 +16,7 @@ class HeaderEditor extends Component {
 
     render() {
         return (<div>
-            <button onClick={this.buttonRun}>Run</button>
+            {/* <button onClick={this.buttonRun}>Run</button> */}
         </div>);
     }
 }

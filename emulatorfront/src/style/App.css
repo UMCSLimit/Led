@@ -1,5 +1,6 @@
 .App {
   text-align: center;
+  height: 100%;
 }
 
 .App-logo {
@@ -40,24 +41,31 @@
 .LeftSide{
 
 float: left;
-background: #778899;
-height: 100vh;
+background: #e4e4e4;
+/* background: #202020; */
+/* background: #778899; */
+height: 100%;
 width: 60%;
 
 
 }
 .RightSide{
   float: right;
-  background: #708090;
-  height: 100vh;
+  background: #e4e4e4;
+  /* background: #202020; */
+  /* background: #708090; */
+  height: 100%;
   width: 40%;
 }
 
 .textEditor{
-  max-width: 500px;
+  /* border-radius: 15%; */
+  /* max-width: 500px; */
+  background: #e4e4e4;
   /* border: 2px solid white; */
-  background: #54616d ;
-  padding: 10px;
+  /* background: #54616d ; */
+  /* padding: 10px; */
   margin: 20px;
+  height: 90%;
 
 }

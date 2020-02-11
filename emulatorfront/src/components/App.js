@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import './../style/App.css';
 import Editor from './Editor';
 import Emulator from './Emulator';
+import AnimationQueue from './AnimationQueue';
+import 'react-bulma-components/dist/react-bulma-components.min.css';
 
 class App extends Component {
   render() { 
@@ -10,6 +12,7 @@ class App extends Component {
         <div className="LeftSide">
           {this.props.dmxValues}
           <Emulator />
+          <AnimationQueue />
         </div>
         <div className="RightSide">
           <Editor />

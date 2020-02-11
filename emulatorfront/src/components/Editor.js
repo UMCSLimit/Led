@@ -16,6 +16,13 @@ const mapDispatchToProps = (dispatch) => ({
 });
 
 class Editor extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            output: 'siemanko'
+        }
+    }
+
     onChange = (newValue) => {
         this.props.onChange(newValue);
     }
@@ -24,29 +31,29 @@ class Editor extends Component {
         return (<div className="textEditor">
             <HeadEditor />
             <AceEditor
-                placeholder="Hej, wpisz tutaj swoj tekst"
+                style={{'height': '100%', 'width': '100%', 'borderRadius': '1%'}}
+                placeholder="Your code goes here"
                 mode="javascript"
                 theme="monokai"
                 name="mainEditor"
                 onChange={this.onChange}
-                fontSize={14}
+                fontSize={16}
                 showPrintMargin={true}
                 showGutter={true}
                 highlightActiveLine={true}
-
                 value = {this.props.code}
-//                 value={`function onLoad(editor) {
-//   console.log("i've  loaded");
-// }`}
-
                 editorProps={{ 
-                $blockScrolling: true
+                    $blockScrolling: true
                 }}
-
                 enableBasicAutocompletion={true}
                 enableLiveAutocompletion={true}
                 enableSnippets={true}
           />
+
+        {/* <Notification color="danger">
+            Missing ( after console.log
+            <Button onClick={() => {}} remove />
+        </Notification> */}
         </div>);
     }
 }
