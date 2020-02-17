@@ -1,20 +1,18 @@
 import React, { Component } from 'react';
 import HeaderEmulator from './HeaderEmulator';
 import Segment from './Segment';
-
 import { connect } from 'react-redux'
-import { updateDmx, editorStop } from '../actions'
-
-import { Button, Modal, Form, Icon } from 'react-bulma-components';
+import { updateDmx, editorStop, editorChange, queueChange } from '../actions'
+import { Button, Modal, Form, Container } from 'react-bulma-components';
 
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faCaretRight } from '@fortawesome/free-solid-svg-icons'
 
 import ReactNotification from 'react-notifications-component'
 import 'react-notifications-component/dist/theme.css'
-
 import { store } from 'react-notifications-component';
 
+const { ipcRenderer } = require('electron')
 const io = require('socket.io-client');
 
 const mapStateToProps = (state) => ({
@@ -25,7 +23,9 @@ const mapStateToProps = (state) => ({
 
 const mapDispatchToProps = (dispatch) => ({
     onClick: (text) => dispatch(updateDmx(text)),
-    editorStop: () => dispatch(editorStop())
+    editorStop: () => dispatch(editorStop()),
+    codeChange: (code) => dispatch(editorChange(code)),
+    queueChange: (queue) => dispatch(queueChange(queue)),
 });
 
 class Emulator extends Component {
@@ -43,7 +43,8 @@ class Emulator extends Component {
             showModal: false,
             sending: false,
             modalName: '',
-            modalDescription: ''
+            modalDescription: '',
+            queue: []
         };
     }
 
@@ -60,53 +61,23 @@ class Emulator extends Component {
     }
 
     componentDidMount() {
+        ipcRenderer.on('log',    this.ipcLog);
+        ipcRenderer.on('stop',   this.ipcStop);
+        ipcRenderer.on('error',  this.ipcError);
+        ipcRenderer.on('queue',  this.ipcQueue);
+        ipcRenderer.on('save',   this.ipcGetCode);
+        ipcRenderer.on('update', this.ipcUpdate);
 
         const socket = io.connect('http://localhost:3002');
         this.setState({socket: socket })
         socket.on('connection', (socket) => {
           console.log('connected');
         })
-        
         socket.on('update', (payload) => {
-          this.setState({values: payload});
-          if (this.state.dmxFlag === 'black') 
-            this.setState({dmxFlag: 'red'});
-          else
-            this.setState({dmxFlag: 'black'})
-        })
+            // console.log(payload);
+            // this.setState({values: payload});
 
-        socket.on('my_error', (payload) => {
-            store.addNotification({
-                title: "Error!",
-                message: payload,
-                type: "danger",
-                insert: "top",
-                container: "bottom-right",
-                animationIn: ["animated", "fadeIn"],
-                animationOut: ["animated", "fadeOut"],
-                dismiss: {
-                  duration: 5000,
-                  onScreen: true
-                }
-              });
-            this.setState({running: false});
-        })
-
-        socket.on('log', (payload) => {
-            store.addNotification({
-                title: "console.log",
-                message: `${payload}`,
-                type: "info",
-                insert: "top",
-                container: "bottom-right",
-                animationIn: ["animated", "fadeIn"],
-                animationOut: ["animated", "fadeOut"],
-                dismiss: {
-                  duration: 3000,
-                  onScreen: true
-                }
-              });
-        })
+        });
 
         let segments = this.generateSegments();
         this.setState({
@@ -116,6 +87,75 @@ class Emulator extends Component {
 
     componentWillUnmount() {
         clearInterval(this.state.intervalDmx);
+
+        ipcRenderer.removeListener('log',    this.ipcLog);
+        ipcRenderer.removeListener('stop',   this.ipcLog);
+        ipcRenderer.removeListener('error',  this.ipcError);
+        ipcRenderer.removeListener('queue',  this.ipcQueue);
+        ipcRenderer.removeListener('save',   this.ipcGetCode);
+        ipcRenderer.removeListener('update', this.ipcUpdate);
+    }
+
+    ipcLoadCode = (event, args) => {
+        this.props.codeChange(args);
+
+        // code loaded
+    }
+
+    ipcGetCode = (event, args) => {
+        ipcRenderer.send('save', this.props.code)
+    }
+
+    ipcStop = (event, args) => {
+        this.setState({ running: false});
+    }
+
+    ipcUpdate = (event, args) => {
+        // console.log(args);
+
+        this.setState({values: args});
+        if (this.state.dmxFlag === 'black') this.setState({dmxFlag: 'red'});
+        else this.setState({dmxFlag: 'black'})
+    }
+
+    ipcError = (event, args) => {
+        store.addNotification({
+            title: "Error!",
+            message: args,
+            type: "danger",
+            insert: "top",
+            container: "bottom-right",
+            animationIn: ["animated", "fadeIn"],
+            animationOut: ["animated", "fadeOut"],
+            dismiss: {
+              duration: 5000,
+              onScreen: true
+            }
+          });
+        this.setState({running: false});
+    }
+
+    ipcLog = (event, args) => {
+        store.addNotification({
+            title: "console.log",
+            message: `${args}`,
+            type: "info",
+            insert: "top",
+            container: "bottom-right",
+            animationIn: ["animated", "fadeIn"],
+            animationOut: ["animated", "fadeOut"],
+            dismiss: {
+              duration: 3000,
+              onScreen: true
+            }
+          });
+    }
+
+    ipcQueue = (event, args) => {
+        // console.log(args);
+        this.setState({queue: [ args.playing, ...args.queue ]});
+
+        this.props.queueChange([ args.playing, ...args.queue ]);
     }
 
     generateSegments() {
@@ -129,14 +169,14 @@ class Emulator extends Component {
                 segmentsRow.push(<Segment key={i * 5 + j} color={color}/>);
             }
             
-            if(i == 0) {
+            if(i === 0) {
                 segments.push(<div key={i} background="blue" style={{display: "flex"}}>{segmentsRow}</div>);
             } else {
                 segments.push(<div key={i} style={{display: "flex"}}>{segmentsRow}</div>);
             }
 
         }
-        return <div style={{display: "block", alignItems: "center"}}>{segments}</div>
+        return <Container style={{ width:'90%', display: "block", alignItems: "center"}}>{segments}</Container>
     }
 
     sleep = (ms) => {
@@ -156,39 +196,44 @@ class Emulator extends Component {
 
     buttonClick = () => {
         this.setState({running: false});
-        this.state.socket.emit('off');
+        ipcRenderer.send('off');
+        // this.state.socket.emit('off');
     }
 
     runCode = () => {
         this.setState({running: true});
-        this.state.socket.emit('code', this.props.code);
+        ipcRenderer.send('code', this.props.code);
+        // this.state.socket.emit('code', this.props.code);
     }
 
     onModalChange = (evt) => {
         const value = evt.target.type === 'checkbox' ? evt.target.checked : evt.target.value;
         this.setState({
             [evt.target.name]: value,
-          });
+        });
     }
 
     render() {
 
         const { modalName, modalDescription } = this.state;
 
-        return (<div>
+        return (<Container>
             <ReactNotification />
             <HeaderEmulator/>
 
-            {/* <div>
-                <div style={{width: '20px', height: '20px', backgroundColor: this.state.dmxFlag, borderRadius: '50%', marginLeft: '20px'}}></div>
-            </div> */}
+            {/* 
+                <div>
+                    <div style={{width: '20px', height: '20px', backgroundColor: this.state.dmxFlag, borderRadius: '50%', marginLeft: '20px'}}></div>
+                </div> 
+            */}
 
-            { !this.state.running && <Button style={{'margin': '5px'}} color="primary" onClick={this.runCode}> Run Code</Button> }
-            { this.state.running  && <Button style={{'margin': '5px'}} color="danger" onClick={this.buttonClick}>Stop</Button> }
+            { !this.state.running && <Button style={{'margin': '15px'}} color="primary" onClick={this.runCode}> Run Code</Button> }
+            { this.state.running  && <Button style={{'margin': '15px'}} color="danger" onClick={this.buttonClick}>Stop</Button> }
 
             {this.generateSegments()}
 
             {/* <FontAwesomeIcon icon={faCaretRight} size="2x" color="white"/> */}
+            {/* <Button onClick={() => {ipcRenderer.send('asynchronous-message', 'ping')}}>Ping</Button> */}
 
             <Button style={{'margin': '5px'}} onClick={() => { this.setState({showModal: true})}} color="light">
                 Share your code!
@@ -238,17 +283,21 @@ class Emulator extends Component {
                 </Modal.Card>
             </Modal>
 
-            <Form.Field>
+                    {/* { this.state.queue.forEach((item) => <div><h1>{item.id} - {item.name}</h1></div>)} */}
+
+            {/* <Form.Field>
                 <Form.Control>
-                    <Form.Checkbox>
+                    <Form.Checkbox onChange={() => {this.setState({liveMode: !this.state.liveMode})}} checked={this.state.liveMode}>
                         Live mode
                     </Form.Checkbox>
-                    {/* <Checkbox name="termsAccepted" onChange={this.onChange} checked={termsAccepted}>
-                    I agree to the <a href="#agree">terms and conditions</a>
-                    </Checkbox> */}
                 </Form.Control>
             </Form.Field>
-        </div>);
+             */}
+            {/* <Checkbox name="termsAccepted" onChange={this.onChange} checked={termsAccepted}>
+            I agree to the <a href="#agree">terms and conditions</a>
+            </Checkbox> */}
+            
+        </Container>);
     }
 }
 

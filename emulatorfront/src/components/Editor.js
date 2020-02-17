@@ -6,6 +6,7 @@ import 'ace-builds/src-noconflict/ext-language_tools';
 import "ace-builds/src-noconflict/theme-monokai";
 import { connect } from 'react-redux'
 import { editorChange } from './../actions';
+import { Container } from 'react-bulma-components';
 
 const mapStateToProps = (state) => ({
     code: state.editor.code
@@ -28,10 +29,12 @@ class Editor extends Component {
     }
 
     render() {
-        return (<div className="textEditor">
-            <HeadEditor />
+        return (
+            // <div className="textEditor">
+            <Container style={{ 'marginTop': '100px', 'width': '80%' }}>
+            {/* <HeadEditor /> */}
             <AceEditor
-                style={{'height': '100%', 'width': '100%', 'borderRadius': '1%'}}
+                style={{ 'borderRadius': '1%', 'width': '100%' }}
                 placeholder="Your code goes here"
                 mode="javascript"
                 theme="monokai"
@@ -54,7 +57,8 @@ class Editor extends Component {
             Missing ( after console.log
             <Button onClick={() => {}} remove />
         </Notification> */}
-        </div>);
+        </Container>);
+       // </div>);
     }
 }
 

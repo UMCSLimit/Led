@@ -1,4 +1,4 @@
-  import { UPDATE_DMX } from "../constants/action-types";
+import { UPDATE_DMX } from "../constants/action-types";
 
 const initialState = {
   dmxValues: {}
