@@ -1,13 +1,24 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
 import './../style/App.css';
+
 import Editor from './Editor';
 import Emulator from './Emulator';
 import AnimationQueue from './AnimationQueue';
+import FormAnimation from './FormAnimation';
+
 import 'react-bulma-components/dist/react-bulma-components.min.css';
+import { Form, Button } from 'react-bulma-components';
+import { Animated } from "react-animated-css";
 
-import { Form, Box, Hero, Footer, Container, Content } from 'react-bulma-components';
+import { modalShow } from '../actions';
 
-import {Animated} from "react-animated-css";
+const mapStateToProps = (state) => ({
+});
+
+const mapDispatchToProps = (dispatch) => ({
+  modalShow: () => dispatch(modalShow())
+});
 
 class App extends Component {
   constructor(props) {
@@ -29,6 +40,10 @@ class App extends Component {
                 </Form.Control>
             </Form.Field>
           <Emulator />
+          <Button style={{'margin': '5px'}} onClick={this.props.modalShow} color="light">
+                Share your code!
+          </Button>
+          <FormAnimation />
         </div>
         <div className="RightSide">
 
@@ -40,32 +55,9 @@ class App extends Component {
               <Editor />
           </Animated>
         </div>
-
-        {/* <Footer style={{ 'padding': '3rem 1.5rem 3rem' }}>
-          <Container>
-            <Content style={{ textAlign: 'center' }}>
-              <p>
-                <strong>Bulma</strong> by <a href="http://jgthms.com">Jeremy Thomas</a>. The source code is licensed
-                <a href="http://opensource.org/licenses/mit-license.php">MIT</a>. The website content
-                is licensed <a href="http://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY NC SA 4.0</a>.
-                </p>
-              </Content>
-            </Container>
-          </Footer> */}
-
-      {/* <Hero size="fullheight" style={{ 'backgroundColor': '#e4e4e4'}}>
-        <Hero.Head renderAs="header" />
-        <Hero.Body>
-
-        </Hero.Body>
-        <Hero.Footer>
-          </Hero.Footer>
-        </Hero> */}
-
-
       </div>
     );
   }
 }
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App);

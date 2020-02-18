@@ -1,9 +1,11 @@
 import React, { Component } from 'react';
-import HeadEditor from './HeaderEditor';
+// import HeadEditor from './HeaderEditor';
 import AceEditor from "react-ace";
+
 import "ace-builds/src-min-noconflict/mode-javascript";
 import 'ace-builds/src-noconflict/ext-language_tools';
 import "ace-builds/src-noconflict/theme-monokai";
+
 import { connect } from 'react-redux'
 import { editorChange } from './../actions';
 import { Container } from 'react-bulma-components';
@@ -30,7 +32,6 @@ class Editor extends Component {
 
     render() {
         return (
-            // <div className="textEditor">
             <Container style={{ 'marginTop': '100px', 'width': '80%' }}>
             {/* <HeadEditor /> */}
             <AceEditor
@@ -52,13 +53,7 @@ class Editor extends Component {
                 enableLiveAutocompletion={true}
                 enableSnippets={true}
           />
-
-        {/* <Notification color="danger">
-            Missing ( after console.log
-            <Button onClick={() => {}} remove />
-        </Notification> */}
         </Container>);
-       // </div>);
     }
 }
 

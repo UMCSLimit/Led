@@ -6,7 +6,6 @@ class Segment extends Component {
         let rgb_sum = color[0] + color[1] + color[2];
         let transp = rgb_sum / (255 * 3);
 
-        // console.log(color)
         // if(!color[0] && !color[1] && !color[2]) return `${color}, 0.3`;
         return `${color}, ${transp}`;
     }

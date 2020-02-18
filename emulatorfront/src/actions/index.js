@@ -25,19 +25,44 @@ export const queueChange = queue => ({
   queue
 })
 
+export const modalChangeName = name => ({
+  type: 'MODAL_CHANGE_NAME',
+  name
+})
+
+export const modalChangeDesciption = description => ({
+  type: 'MODAL_CHANGE_DESCRIPTIOM',
+  description
+})
+
+export const modalSend = () => ({
+  type: 'MODAL_SEND'
+})
+
+export const modalSent = () => ({
+  type: 'MODAL_SENT'
+})
+
+export const modalShow = () => ({
+  type: 'MODAL_SHOW'
+})
+
+export const modalHide = () => ({
+  type: 'MODAL_HIDE'
+})
+
 // To do in redux
-// Queue
-// - Get code from id
-// - Get queue from axios
 // Settings
-// - socket in redux
 // - running in redux
 // - Live mode in redux
+// - socket in redux
+// - on run, clear list of console log
+// - on run, clear last error
+
 // - Update code in redux
+
 // - None / UDP / USB Mode
+
 // - Light / Dark mode in redux
 // - Last error, or all errors in redux
 // - Last console log, or all console.logs
-// Modal
-// - Show modal in redux
-// - modalName and modalDescription

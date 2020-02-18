@@ -384,7 +384,7 @@ sendQueue = (queue) => {
     mainWindow.webContents.send('queue', queue);
 }
 
-let mainQueue = new MainQueue(sendQueue);
+// let mainQueue = new MainQueue(sendQueue);
 
 // ----- Queue tests -----
 // setTimeout(() => {
