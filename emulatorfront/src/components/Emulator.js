@@ -9,7 +9,8 @@ import HeaderEmulator from './HeaderEmulator';
 import ReactNotification from 'react-notifications-component';
 import 'react-notifications-component/dist/theme.css';
 import { store } from 'react-notifications-component';
-import { updateDmx, editorStop, editorChange, queueChange } from '../actions';
+import { updateDmx, editorStop, editorChange, queueChange, 
+    emulatorLog, emulatorError, emulatorRun, emulatorStop } from '../actions';
 
 // import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 // import { faCaretRight } from '@fortawesome/free-solid-svg-icons'
@@ -21,7 +22,8 @@ const io = require('socket.io-client');
 const mapStateToProps = (state) => ({
     dmxValues: state.dmx.text,
     code: state.editor.code,
-    run: state.editor.run
+    run: state.editor.run,
+    emulatorRunning: state.emulator.running,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -29,6 +31,10 @@ const mapDispatchToProps = (dispatch) => ({
     editorStop: () => dispatch(editorStop()),
     codeChange: (code) => dispatch(editorChange(code)),
     queueChange: (queue) => dispatch(queueChange(queue)),
+    emulatorLog: (log) => dispatch(emulatorLog(log)),
+    emulatorError: (error) => dispatch(emulatorError(error)),
+    emulatorRun: () => dispatch(emulatorRun()),
+    emulatorStop: () => dispatch(emulatorStop()),
 });
 
 class Emulator extends Component {
@@ -40,8 +46,6 @@ class Emulator extends Component {
             values: values,
             segments: null,
             socket: null,
-            running: false,
-            queue: []
         };
     }
 
@@ -100,7 +104,7 @@ class Emulator extends Component {
     }
 
     ipcStop = (event, args) => {
-        this.setState({ running: false});
+        this.props.emulatorStop();
     }
 
     ipcUpdate = (event, args) => {
@@ -108,6 +112,9 @@ class Emulator extends Component {
     }
 
     ipcError = (event, args) => {
+        this.props.emulatorError(args);
+        this.props.emulatorStop();
+
         store.addNotification({
             title: "Error!",
             message: args,
@@ -120,11 +127,12 @@ class Emulator extends Component {
               duration: 5000,
               onScreen: true
             }
-          });
-        this.setState({running: false});
+        });
     }
 
     ipcLog = (event, args) => {
+        this.props.emulatorLog(`${args}`);
+
         store.addNotification({
             title: "console.log",
             message: `${args}`,
@@ -137,11 +145,10 @@ class Emulator extends Component {
               duration: 3000,
               onScreen: true
             }
-          });
+        });
     }
 
     ipcQueue = (event, args) => {
-        this.setState({queue: [ args.playing, ...args.queue ]});
         this.props.queueChange([ args.playing, ...args.queue ]);
     }
 
@@ -167,24 +174,26 @@ class Emulator extends Component {
     }
 
     buttonClick = () => {
-        this.setState({running: false});
+        this.props.emulatorStop();
         ipcRenderer.send('off');
         // this.state.socket.emit('off');
     }
 
     runCode = () => {
-        this.setState({running: true});
+        this.props.emulatorRun();
         ipcRenderer.send('code', this.props.code);
         // this.state.socket.emit('code', this.props.code);
     }
 
     render() {
+        let { emulatorRunning } = this.props;
+
         return (<Container>
             <ReactNotification />
             <HeaderEmulator/>
 
-            { !this.state.running && <Button style={{'margin': '15px'}} color="primary" onClick={this.runCode}> Run Code</Button> }
-            { this.state.running  && <Button style={{'margin': '15px'}} color="danger" onClick={this.buttonClick}>Stop</Button> }
+            { !emulatorRunning && <Button style={{'margin': '15px'}} color="primary" onClick={this.runCode}> Run Code</Button> }
+            { emulatorRunning  && <Button style={{'margin': '15px'}} color="danger" onClick={this.buttonClick}>Stop</Button> }
 
             {this.generateSegments()}
 

@@ -14,6 +14,11 @@ class HeaderEditor extends Component {
         this.props.run();
     }
 
+    // To do: 
+    // run code from this component
+    // get last logs here
+    // get last error
+
     render() {
         return (<div>
             {/* <button onClick={this.buttonRun}>Run</button> */}

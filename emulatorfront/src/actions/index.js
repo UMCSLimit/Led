@@ -51,18 +51,44 @@ export const modalHide = () => ({
   type: 'MODAL_HIDE'
 })
 
+export const emulatorRun = () => ({
+  type: 'EMULATOR_RUN'
+})
+
+export const emulatorStop = () => ({
+  type: 'EMULATOR_STOP'
+})
+
+export const emulatorError = (error) => ({
+  type: 'EMULATOR_ERROR',
+  error
+})
+
+export const emulatorLog = (log) => ({
+  type: 'EMULATOR_LOG',
+  log
+})
+
+export const emulatorResetLogs = () => ({
+  type: 'EMULATOR_LOG_RESET'
+})
+
+export const emulatorStartLiveMode = () => ({
+  type: 'EMULATOR_LIVE_MODE_START'
+})
+
+export const emulatorStopLiveMode = () => ({
+  type: 'EMULATOR_LIVE_MODE_STOP'
+})
+
+export const emulatorLiveMode = () => ({
+  type: 'EMULATOR_LIVE_MODE'
+})
+
 // To do in redux
-// Settings
-// - running in redux
-// - Live mode in redux
+
 // - socket in redux
-// - on run, clear list of console log
-// - on run, clear last error
-
-// - Update code in redux
-
-// - None / UDP / USB Mode
-
-// - Light / Dark mode in redux
-// - Last error, or all errors in redux
-// - Last console log, or all console.logs
+// - add to redux if_electron
+// - if_electron add to redux ipcRenderer
+// - main ipc functions in redux 
+// - Light / Dark mode
