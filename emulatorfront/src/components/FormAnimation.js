@@ -3,8 +3,11 @@ import { connect } from 'react-redux';
 import { modalChangeName, modalChangeDesciption, modalSend, modalSent, modalShow, modalHide } from '../actions';
 import { Button, Modal, Form } from 'react-bulma-components';
 
+const axios = require('axios');
+
 const mapStateToProps = (state) => ({
     modal: state.modal,
+    code: state.editor.code,
 })
 
 const mapDispatchToProps = (dispatch) => ({
@@ -17,6 +20,16 @@ const mapDispatchToProps = (dispatch) => ({
 })
 
 class FormAnimation extends Component {
+
+    send() {
+        axios.get('http://212.182.24.47:3005/Led/animations/post', { name: 'electron', author: 'electron app', lang_name: 'js', type_name: 'kinect' ,code: this.props.code })
+        .then((resp) => {
+            console.log(resp);
+        })
+        .catch((err) => {
+            console.log(err);
+        })
+    }
 
     render() {
         let { show, sending, name, description } = this.props.modal;
@@ -31,7 +44,7 @@ class FormAnimation extends Component {
                 {/* <Button remove /> */}
             </Modal.Card.Head>
             <Modal.Card.Body>
-                {!sending &&                         
+                { !sending &&                         
                     <Form.Field>
                         <Form.Label>Your name</Form.Label>
                         <Form.Control>
@@ -55,7 +68,7 @@ class FormAnimation extends Component {
                 {!sending && 
                     <Form.Field kind="group">
                         <Form.Control>
-                        <Button onClick={this.props.send} type="primary">Submit</Button>
+                        <Button onClick={() => { this.send(); this.props.send();}} type="primary">Submit</Button>
                         </Form.Control>
                         <Form.Control>
                         <Button onClick={this.props.hide} color="link">Cancel</Button>
