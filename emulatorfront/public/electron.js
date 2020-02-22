@@ -23,7 +23,7 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1300, 
     height: 800, 
-    webPreferences: { nodeIntegration: true },
+    webPreferences: { nodeIntegration: true, webSecurity: false },
     minWidth: 600,
     title: 'UMCS Led Emulator'
   });
@@ -222,7 +222,6 @@ ipcMain.on('off', (event, arg) => {
   working = false;
 });
 
-
 globalRemoveDmxValue = 30;
 
 // ----- QUEUE -----
@@ -248,11 +247,11 @@ class MainQueue {
     this.queue = [];
     this.minQueueLength = 3;
     this.sendQueue = sendQueue;
-    this.url = `http://212.182.24.47:3005/Led/animations/list`;
+    this.url = `http://localhost:3005/Led/animations/random`;
     // this.push({ name: 'First' })
     // Start by getting a random animation
-    // this.randomCode();
-    this.push(this.randomCode());
+    this.randomCode();
+    // this.push(this.randomCode());
     // this.start();
   }
 
@@ -263,8 +262,8 @@ class MainQueue {
     // Filling up to minQueueLength by random animations
     if( this.queue.length < this.minQueueLength) { // while
       log.info('Queue length smaller than 3, adding new code');
-      this.push(this.randomCode());
-      // this.randomCode();
+      // this.push(this.randomCode());
+      this.randomCode();
     }
 
     console.log(nextItem);
@@ -301,12 +300,14 @@ class MainQueue {
       .then(data => {
         // console.log(data.data);
 
-        data.data.forEach((element) => {
-          // console.log(element);
-          let o = Object.assign({}, element, { time: 10000 });
-          // console.log(o);
-          this.push(o);
-        })
+        this.push(data.data);
+
+        // data.data.forEach((element) => {
+        //   // console.log(element);
+        //   let o = Object.assign({}, element, { time: 10000 });
+        //   // console.log(o);
+        //   this.push(o);
+        // })
       })
       .catch(err => {
         console.log(err);
@@ -318,8 +319,8 @@ class MainQueue {
   }
 
   randomCode() {
-    // this.apiCall();
-    // return;
+    this.apiCall();
+    return;
 
     this.countRandom++;
     if(this.countRandom % 3 === 0)
@@ -453,36 +454,28 @@ sendQueue = (queue) => {
     mainWindow.webContents.send('queue', queue);
 }
 
-let mainQueue = new MainQueue(sendQueue);
-
+// let mainQueue = new MainQueue(sendQueue);
 // mainQueue.start();
-
 
 // setTimeout(() => {
 //   mainQueue.axios()
 //     .then(data => {
 //       data.data.forEach((element) => {
 //         // console.log(element);
-
 //         let code = element.code;
-
 //         // code = code.replace('\t', ' ');
 //         // code = code.replace('\n', ' ');
-
 //         // code = `function removeAll () {     for (let i = 0; i < 5; i++) {         for (let j = 0; j < 28; j++){                          values[i][j][0] -= 3;             values[i][j][1] -= 3;             values[i][j][2] -= 3;                          if (values[i][j][0] < 0) values[i][j][0] = 0;             if (values[i][j][1] < 0) values[i][j][1] = 0;             if (values[i][j][2] < 0) values[i][j][2] = 0;         }     } }  async function loop() { 	// Your code goes here 	 	let kinect = GetKinect(); 	 	// [ 0, 1 ] 	let x = kinect.x / 1980; 	let y = kinect.y / 1000; 	 	x *= 28; 	y *= 5; 	 	x = parseInt(x); 	y = parseInt(y); 	 	removeAll(); 	 	 	 	for(let i = 0; i < 5; i++) {     // 	values[i][x][0] += 30;      	values[i][x][1] += 30;     //	values[i][x][2] += 30; 	} 	 // 	removeAll(); 	 	await sleep(46); 	NextFrame(); }`
-
 //         let o = Object.assign({}, element, { time: 10000, code: code });
-
 //         console.log(o);
 //         mainQueue.push(o);
 //       })
-//       // mainQueue.start();
+//       mainQueue.start();
 //     })
 //     .catch(err => {
 //       console.log(err);
 //     })
 // }, 5000)
-
 
 
 // ----- Queue tests -----

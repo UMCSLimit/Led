@@ -24,6 +24,7 @@ const mapStateToProps = (state) => ({
     code: state.editor.code,
     run: state.editor.run,
     emulatorRunning: state.emulator.running,
+    liveMode: state.emulator.liveMode,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -108,7 +109,8 @@ class Emulator extends Component {
     }
 
     ipcUpdate = (event, args) => {
-        this.setState({values: args});
+        // if (this.props.liveMode)
+            this.setState({values: args});
     }
 
     ipcError = (event, args) => {
@@ -160,7 +162,7 @@ class Emulator extends Component {
             for (let j = 0; j < 28; j++) {
                 let color = [0, 0, 0];
                 color = this.state.values[i][j];
-                segmentsRow.push(<Segment key={i * 5 + j} color={color}/>);
+                segmentsRow.push(<Segment id={i*28+j} key={i*28+j} color={color}/>);
             }
             
             if(i === 0) {

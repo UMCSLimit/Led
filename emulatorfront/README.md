@@ -11,11 +11,9 @@
 - check if file is opened or new
 - make saving automatic, easy title, no looking for files on disc. Always in one place
 - make process for while(true){} 
-- table for looking up code with tabs ( all, accepted, examples )
 - values[x][y] = [255, 0, 0] doesnt work
 - [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
-- table gets from backend all codes
-- to table add tabs, [ accepted, all, new, hot, recent, examples, me ]
+- add my codes to tab
 - USOS / Kampus token like login for sending, get token, save token
 
 ### Queue

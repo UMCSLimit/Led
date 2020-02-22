@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { modalChangeName, modalChangeDesciption, modalSend, modalSent, modalShow, modalHide } from '../actions';
+import { modalChangeName, modalChangeDesciption, modalSend, modalSent, modalShow, modalHide, modalChangeAuthor } from '../actions';
 import { Button, Modal, Form } from 'react-bulma-components';
 
 const axios = require('axios');
@@ -13,6 +13,7 @@ const mapStateToProps = (state) => ({
 const mapDispatchToProps = (dispatch) => ({
     changeName: (name) => dispatch(modalChangeName(name)),
     changeDesciption: (description) => dispatch(modalChangeDesciption(description)),
+    changeAuthor: (author) => dispatch(modalChangeAuthor(author)),
     send: () => dispatch(modalSend()),
     sent: () => dispatch(modalSent()),
     show: () => dispatch(modalShow()),
@@ -22,17 +23,48 @@ const mapDispatchToProps = (dispatch) => ({
 class FormAnimation extends Component {
 
     send() {
-        axios.get('http://212.182.24.47:3005/Led/animations/post', { name: 'electron', author: 'electron app', lang_name: 'js', type_name: 'kinect' ,code: this.props.code })
-        .then((resp) => {
+
+        let config = {
+            headers: { 'Content-Type': 'application/json' },
+        };
+
+        let data = {
+            name: this.props.modal.name,
+            description: this.props.modal.description,
+            author: this.props.modal.author,
+            id_lang: 1,
+            id_type: 1,
+            code: this.props.code
+        }
+
+        axios.post('http://localhost:3005/Led/animations/post', data, config)
+        .then(resp => {
             console.log(resp);
+
+            this.props.sent();
+            this.props.hide();
         })
-        .catch((err) => {
-            console.log(err);
-        })
+        .catch(function (error) {
+            if (error.response) {
+              // Request made and server responded
+              console.log(error.response.data);
+              console.log(error.response.status);
+              console.log(error.response.headers);
+            } else if (error.request) {
+              // The request was made but no response was received
+              console.log(error.request);
+            } else {
+              // Something happened in setting up the request that triggered an Error
+              console.log('Error', error.message);
+            }
+
+            this.props.sent();
+            this.props.hide();
+        });
     }
 
     render() {
-        let { show, sending, name, description } = this.props.modal;
+        let { show, sending, name, description, author } = this.props.modal;
 
         return (
         <Modal show={show} modal={{closeOnEsc: true}} closeOnBlur={true} onClose={this.props.hide}> 
@@ -57,6 +89,14 @@ class FormAnimation extends Component {
                         <Form.Label>Description</Form.Label>
                         <Form.Control>
                         <Form.Textarea placeholder="Description" onChange={(e) => {this.props.changeDesciption(e.target.value)}} name="modalDescription" value={description} />
+                        </Form.Control>
+                    </Form.Field>
+                }
+                { !sending && 
+                    <Form.Field>
+                        <Form.Label>Author</Form.Label>
+                        <Form.Control>
+                        <Form.Input placeholder="Author" onChange={(e) => {this.props.changeAuthor(e.target.value)}} name="modalAuthor" value={author} />
                         </Form.Control>
                     </Form.Field>
                 }

@@ -5,6 +5,7 @@ import './../style/App.css';
 import Editor from './Editor';
 import Emulator from './Emulator';
 import AnimationQueue from './AnimationQueue';
+import AnimationList from './AnimationList';
 import FormAnimation from './FormAnimation';
 
 import 'react-bulma-components/dist/react-bulma-components.min.css';
@@ -28,17 +29,18 @@ class App extends Component {
     return (
       <div className="App">
         <div className="LeftSide">
-          <Form.Field>
-                <Form.Control>
-                    <Form.Checkbox onChange={this.props.emulatorLiveMode} checked={liveMode}>
-                        Live mode
-                    </Form.Checkbox>
-                </Form.Control>
-            </Form.Field>
+            { !liveMode && <Button onClick={this.props.emulatorLiveMode}>
+                Live mode
+            </Button> }
+
+            { liveMode && <Button onClick={this.props.emulatorLiveMode}>
+                Go local
+            </Button> }
           <Emulator />
-          <Button style={{'margin': '5px'}} onClick={modalShow} color="light">
+          { !liveMode && <Button style={{'margin': '5px'}} onClick={modalShow} color="light">
                 Share your code!
-          </Button>
+          </Button>}
+          { !liveMode && <AnimationList />}
           <FormAnimation />
         </div>
         <div className="RightSide">

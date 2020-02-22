@@ -2,6 +2,10 @@ import React, { Component } from 'react';
 
 class Segment extends Component {
 
+    constructor(props) {
+        super(props);
+    }
+
     getColorRGBA(color) {
         let rgb_sum = color[0] + color[1] + color[2];
         let transp = rgb_sum / (255 * 3);
@@ -10,16 +14,23 @@ class Segment extends Component {
         return `${color}, ${transp}`;
     }
 
+    ifDisabled(id) {
+        return (id >= 0 && id <= 10);
+    }
+
     render() {
         const { color } = this.props;
+        let opacity = 1;
+        if(this.ifDisabled(this.props.id)) opacity = 0.7;
         return (<div style={{ 
             // borderStyle: "solid", 
             // borderRadius:'3px', 
             // borderWidth: "1px", 
+            opacity: {opacity},
             width: "30px", 
             height: "70px", 
             minWidth: "15px", 
-            backgroundColor: `rgb(${color})`, 
+            backgroundColor: `rgba(${color}, ${opacity})`, 
             // background: `linear-gradient(to bottom, rgba(${this.getColorRGBA(color)}), rgba(${color},0))`,
             // background: `linear-gradient(to bottom, rgba(${color},1), rgba(${color},0))`,
             margin: "3px"}}>

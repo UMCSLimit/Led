@@ -31,8 +31,13 @@ export const modalChangeName = name => ({
 })
 
 export const modalChangeDesciption = description => ({
-  type: 'MODAL_CHANGE_DESCRIPTIOM',
+  type: 'MODAL_CHANGE_DESCRIPTION',
   description
+})
+
+export const modalChangeAuthor = author => ({
+  type: 'MODAL_CHANGE_AUTHOR',
+  author
 })
 
 export const modalSend = () => ({
