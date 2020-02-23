@@ -75,9 +75,14 @@ class Emulator extends Component {
         socket.on('connection', (socket) => {
           console.log('connected');
         })
+
         socket.on('update', (payload) => {
-            // this.setState({values: payload});
+            this.setState({values: payload});
         });
+
+        socket.on('queue', (queue) => {
+            this.props.queueChange([ queue.playing, ...queue.queue ]);
+        })
 
         let segments = this.generateSegments();
         this.setState({

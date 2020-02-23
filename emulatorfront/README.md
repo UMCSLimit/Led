@@ -15,6 +15,7 @@
 - [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
 - add my codes to tab
 - USOS / Kampus token like login for sending, get token, save token
+- Add queue logic to JSVMserver 
 
 ### Queue
 - null / usb / udp 
@@ -29,5 +30,14 @@
 - highlight segments that dont work, add onhover information
 
 ## .env
-if_electron=false
-backend_url=/*url*/
+REST_BACKEND_URL=
+REST_BACKEND_PORT=
+
+QUEUE_BACKEND_URL=
+QUEUE_BACKEND_PORT=
+
+FRONT_END_URL=
+FRONT_END_PORT=
+
+IS_ELECTRON=
+HAS_LOCAL_QUEUE=
