@@ -201,5 +201,16 @@ sendQueue = (queue) => {
   io.emit('queue', queue);
 }
 
+// ----- QUEUE -----
+// additional
+// - queue has max limit
+// - only one animation for each user
+// - if limit is reached send back request about failure
+// - each animation in queue has unique id
+// send data when:
+// - new animation is added to queue by user
+// - new animation is added when randomed from backend
+// ----- End Queue -----
+
 const mainQueue = new MainQueue(sendQueue);
 mainQueue.start();

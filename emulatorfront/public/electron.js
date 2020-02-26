@@ -1,21 +1,22 @@
 const electron = require('electron');
 const app = electron.app;
 const BrowserWindow = electron.BrowserWindow;
-const Menu = electron.Menu;
 const path = require('path');
 const isDev = require('electron-is-dev');
-var socket = require('socket.io');
-// var io = socket(3002);
 var log = require('electron-log');
-const {NodeVM, VM, VMScript} = require('vm2');
 const { ipcMain } = require('electron');
 const electronLocalshortcut = require('electron-localshortcut');
 const jetpack = require('fs-jetpack');
-const axios = require('axios');
+const dialog = electron.dialog;
+const { fork } = require('child_process');
+// var socket = require('socket.io');
+// var io = socket(3002);
+// const {NodeVM, VM, VMScript} = require('vm2');
+// const Menu = electron.Menu;
+// const axios = require('axios');
 // const {dialog} = require('electron').remote;
 // var remote = require('remote');
 // var dialog = remote.require('electron').dialog;
-const dialog = electron.dialog;
 
 let mainWindow = null;
 
@@ -36,14 +37,11 @@ function createWindow() {
   mainWindow.on('closed', () => mainWindow = null);  
 
   electronLocalshortcut.register(mainWindow, ['Ctrl+R', 'F4'], () => {
-    // console.log('You pressed ctrl & R or F4');
     working = false;
     mainWindow.webContents.send('stop');
   });
 
   electronLocalshortcut.register(mainWindow, ['Ctrl+S'], () => {
-    // console.log('You pressed ctrl & R or F4');
-    // working = false;
     mainWindow.webContents.send('save');
   });
 
@@ -58,7 +56,6 @@ function createWindow() {
 //     }
 // ])
 // Menu.setApplicationMenu(menu); 
-
 }
 
 app.on('ready', createWindow);
@@ -75,116 +72,6 @@ app.on('activate', () => {
   }
 });
 
-let globalRemoveDmxValue = 0;
-
-function removeDmx(dmxValues) {
-
-  let tmp = dmxValues;
-
-  for (let i = 0; i < 5; i++) {
-    for (let j = 0; j < 28; j++) {
-      tmp[i][j][0] -= globalRemoveDmxValue;
-      tmp[i][j][1] -= globalRemoveDmxValue;
-      tmp[i][j][2] -= globalRemoveDmxValue;
-      
-      if (tmp[i][j][0] < 0) tmp[i][j][0] = 0;
-      if (tmp[i][j][1] < 0) tmp[i][j][1] = 0;
-      if (tmp[i][j][2] < 0) tmp[i][j][2] = 0;
-    }
-  }
-
-  return tmp;
-}
-
-// Socket.io functions with VM2
-function NextFrame(dmxValues) {
-
-  // let tmp = removeDmx(dmxValues);
-
-  // io.emit('update', dmxValues)
-  mainWindow.webContents.send('update', dmxValues);
-}
-
-function GetKinect() {
-  let mousePos = electron.screen.getCursorScreenPoint();
-  return mousePos;
-}
-
-let working = false;
-
-function ifWorking() {
-  return working;
-}
-
-function initValues() {
-  let values = [];
-  for (let i = 0; i < 5; i++) {
-      let tmp = []
-      for (let j = 0; j < 28; j++) {
-          tmp.push([0, 0, 0]);
-      }
-      values.push(tmp);
-  }
-  return values;
-}
-
-function getError(err) {
-  // io.emit('my_error', err);
-  mainWindow.webContents.send('error', err);
-}
-
-function initNodeVM() {
-  let vm = new NodeVM({
-    timeout: 4000,
-    sandbox: {
-      _ifWorking: () => ifWorking(),
-      _NextFrame: (dmxValues) => NextFrame(dmxValues),
-      GetKinect: () => GetKinect(),
-      _initValues: () => initValues(),
-      _getError: (err) => getError(err),  
-    },
-    require: {
-      external: true
-    },
-    console: 'redirect'
-   });
-
-   return vm;
-}
-
-function runCodeVM(code) {
-  const vm = initNodeVM();
-
-  vm.on('console.log', (data) => {
-    // io.emit('log', data);
-    mainWindow.webContents.send('log', data);
-  })
-
-  working = true;
-
-  code = `let values = _initValues(); function NextFrame() { if(_ifWorking() === false) throw 'Stop'; _NextFrame(values);} function sleep(ms) {return new Promise(resolve => setTimeout(resolve, ms));} ` + 
-    code + ' ' +
-    ` async function _loop() {
-      while(true){
-        await loop()
-        if(_ifWorking() === false) break; 
-      }
-    } 
-    _loop()
-      .catch(err => {
-        if(err !== 'Stop') _getError(err.message);
-      })
-    ` 
-    
-  try {
-      vm.run(code, 'vm.js')
-  }
-  catch(error) {
-    // io.emit('my_error', error.message );
-    mainWindow.webContents.send('error', error.message);
-  }
-}
-
 // io.on('connection', (socket) => {
 //   log.info('connected..')
 //   socket.on('code', (code) => {
@@ -195,6 +82,7 @@ function runCodeVM(code) {
 //   })
 // })
 
+// -------------------------------------------------
 // IPC MAIN
 ipcMain.on('save', (event, arg) => {
   let path = dialog.showSaveDialog(mainWindow, {
@@ -213,46 +101,34 @@ ipcMain.on('saveTmp', (event, arg) => {
 // ipcMain.on('lastEdited', (event, arg) => {
 // });
 
+let vmCode = null;
+
 ipcMain.on('code', (event, arg) => {
-  runCodeVM(arg)
+  runCodeVM(arg);
+
+  vmCode = fork('vm.js');
+  vmCode.send({ type: 'RUN', code: code });
+  vmCode.on('message', message => {
+
+    switch (message.type) {
+      case 'UPDATE':
+        mainWindow.webContents.send('UPDATE', message.values);
+        break;
+      case 'LOG':
+        mainWindow.webContents.send('LOG', message.log);
+        break;
+      case 'ERROR':
+        mainWindow.webContents.send('ERROR', message.error);
+        break;
+    }
+
+    // const outputValues = convert(message);
+    // console.log(outputValues);
+    // dmx.update(universeName, outputValues);
+  })
 });
 
 ipcMain.on('off', (event, arg) => {
-  working = false;
-});
-
-globalRemoveDmxValue = 30;
-
-// ----- QUEUE -----
-
-// Main queue logic
-// 1. get top from queue
-// 2. run code async 
-// 3. add timeout forexample 5s () => { working=false }
-// 4. after timeout, get next in queue and repeat from 1.
-// 5. if length < 3, get code from backend and push to queue
-
-// additional
-// - queue has max limit
-// - only one animation for each user
-// - fading code that takes one sec to fade out
-// - if limit is reached send back request about failure
-// - two timeouts, where one starts fading out all, second fades in 
-  // Sending whole queue
-  // start signal
-  // stop signal
-  // send data when:
-  // - new animation is added to queue by user
-  // - new animation is added when randomed from backend
-  // each animation in queue has unique id
-
-  // sendQueue() {
-  //   log.info('Sending queue to front end');
-  //   mainWindow.webContents.send('queue', this.queue);
-  //   // After each operation on queue, send whole thing on front
-  //   // Send Push
-  //   // Send Pop
-  //   // Send whole queue for checking for errors ( with ids ) 
-  // }
-
-// ----- End Queue -----
+  if (vmCode !== null) 
+    vmCode.kill("SIGKILL");
+}); 

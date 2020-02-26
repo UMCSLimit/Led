@@ -16,9 +16,13 @@
 - add my codes to tab
 - USOS / Kampus token like login for sending, get token, save token
 
+### Electron
+- Rozdzielenie na pliki 
+- 1. plik IPC communication ? 
+- 2. plik Menu
+
 ### Queue
 - null / usb / udp 
-- ipc to socket
 
 ### Design
 - live mode button with gradient background
