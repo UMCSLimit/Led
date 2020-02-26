@@ -22,6 +22,8 @@ const modal = (state = initalState, action) => {
             return Object.assign({}, state, { show: true });
         case 'MODAL_HIDE':
             return Object.assign({}, state, { show: false });
+        case 'MODAL_RESET':
+            return Object.assign({}, state, { description: '', name: '', author: ''});
         default:
             return state
     }

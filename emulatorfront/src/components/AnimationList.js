@@ -40,10 +40,13 @@ class AnimationList extends Component {
     }
 
     componentDidMount() {
+        this.apiCall();
+    }
+    
+    apiCall = () => {
         axios.get('http://localhost:3005/Led/animations/all')
         .then(resp => {
             this.setState({animations: resp.data});
-            console.log(resp.data);
         })
         .catch(err => {
             console.log(err);
@@ -51,19 +54,16 @@ class AnimationList extends Component {
     }
 
     tableQ() {
-
         let rows = [];
         this.state.animations.forEach((card) => {
             rows.push(
                 <tr>
-                    {/* <th>0</th> */}
                     <td><a onClick={() => {this.props.editorChange(card.code); this.setState({show: false})}}>{card.name}</a></td>
                     <td>{card.author}</td>
                     <td>{card.description}</td>
                     <td>{card.id_lang.lang}</td>
                     <td>{card.id_type.app}</td>
                     <td>5</td>
-                    {/* <td>Code</td> */}
                 </tr>
             );
         })
@@ -72,7 +72,6 @@ class AnimationList extends Component {
             <Table>
                 <thead>
                     <tr>
-                        {/* <th>Number</th> */}
                         <th>Name</th>
                         <th>Author</th>
                         <th>Description</th>
@@ -111,6 +110,7 @@ class AnimationList extends Component {
                 })
                 .catch(err => {
                     console.log(err);
+                    this.setState({animations: []});
                 })
             }
             new_tab.push(tab);
@@ -130,25 +130,23 @@ class AnimationList extends Component {
             </Tabs>);
     }
 
+    hide = () => {
+        this.setState({show: false});
+    }
+
     modal = () => {
         return (
-            <Modal style={{'width': '90%'}} show={this.state.show} modal={{closeOnEsc: true}} closeOnBlur={true} onClose={() => {this.setState({show: false})}}> 
-        <Modal.Card style={{'width': '90%'}}>
-            <Modal.Card.Head>
-                <Modal.Card.Title>
-
-                    {/* Code database */}
-
-                    {this.state.show && this.showTabs()}
-                    
-                </Modal.Card.Title>
-                {/* <Button remove /> */}
-            </Modal.Card.Head>
-            <Modal.Card.Body>
-                { this.tableQ()}
-            </Modal.Card.Body>
+        <Modal style={{'width': '40%'}} show={this.state.show} modal={{closeOnEsc: true}} closeOnBlur={true} onClose={this.hide}> 
+            <Modal.Card style={{'width': '40%'}}>
+                <Modal.Card.Head onClose={this.hide}>
+                    <Modal.Card.Title>
+                        {this.state.show && this.showTabs()}
+                    </Modal.Card.Title>
+                </Modal.Card.Head>
+                <Modal.Card.Body>
+                    { this.tableQ()}
+                </Modal.Card.Body>
             <Modal.Card.Foot style={{ alignItems: 'center', justifyContent: 'center' }}>
-
 
             </Modal.Card.Foot>
         </Modal.Card>
@@ -158,8 +156,7 @@ class AnimationList extends Component {
 
     render() {
         return (<div>
-            {/* { this.state.animations.length > 0 && this.tableQ() } */}
-            <Button onClick={() => {this.setState({show: true})}}>Show codes</Button>
+            <Button onClick={() => {this.setState({show: true}); this.apiCall();}}>Show codes</Button>
             {this.modal()}
         </div>);
     }

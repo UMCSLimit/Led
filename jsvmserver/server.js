@@ -5,6 +5,20 @@ const socket = require('socket.io');
 const axios = require('axios');
 const io = socket(3002);
 
+// DMX
+const DMX = require('dmx');
+const dmx = new DMX();
+const universeName = 'main';
+
+const noDev = true;
+let devType = 'null';
+let devName = '';
+if (!noDev) {
+  devType = 'enttec-open-usb-dmx';
+  devName = '/dev/ttyUSB0';
+}
+let universe = dmx.addUniverse(universeName, devType, devName);
+
 // const process = require('process');
 const { fork } = require('child_process');
 
@@ -36,12 +50,26 @@ app.listen(PORT, () => {
 io.on('connection', (socket) => {
   console.log('connected..')
   socket.on('code', (code) => {
-    runCodeVM(code)
+    // runCodeVM(code)
   });
   socket.on('off', () => {
-    working = false;
+    // working = false;
   });
 });
+
+
+function convert(values) {
+  let dmxValues = {};
+  let id = 0;
+  for(let i = 5; i >= 0; i--) {
+    for(let j = 28; j >= 0; j--) {
+      dmxValues[id] = values[i][j];
+      id++;
+    }
+  }
+  return dmxValues;
+}
+
 
 // Queue 
 class MainQueue {
@@ -59,7 +87,7 @@ class MainQueue {
         this.loop();
       })
       .catch(err => {
-        console.log(err);
+        // console.log(err);
         console.log('Error at start, retrying in 5 sec..');
         setTimeout(() => {
           this.start();
@@ -69,6 +97,7 @@ class MainQueue {
 
   loop() {
     // Getting next item
+    // Sprwadzic czy undediended
     const nextItem = this.next();
 
     // Filling up to minQueueLength by random animations
@@ -99,10 +128,15 @@ class MainQueue {
     // runCodeVM(code);
     const vmCode = fork('vm.js');
 
-    vmCode.send({ type: 'code', code: code });
+    vmCode.send({ type: 'RUN', code: code });
     vmCode.on('message', message => {
       // console.log(message);
-      io.emit('update', message)
+      // Nie mamy dostepu do socketa tutaj
+      io.emit('update', message);
+
+      // const outputValues = convert(message);
+      // console.log(outputValues);
+      // dmx.update(universeName, outputValues);
     })
 
     const codeTime = 5000;
@@ -114,15 +148,17 @@ class MainQueue {
       // We can stop code by killing the process in the future
       // working = false;
       
-      // vmCode.send({type: 'STOP'});
-      vmCode.kill("SIGKILL");
+      vmCode.send({type: 'FADE_OUT'});
+      // vmCode.kill("SIGKILL");
 
       // We wait y milliseconds for the code to stop
       setTimeout(() => {
-        console.log(`Waited 100 milliseconds for playing new code`);
+        
+        vmCode.kill("SIGKILL");
+        console.log(`Waited 1000 milliseconds for playing new code`);
         // We repeat the proccess here
         this.loop();
-      }, 100);
+      }, 1000);
     }, codeTime); // nextItem.time
   }
 
@@ -132,7 +168,8 @@ class MainQueue {
         this.push(data.data);
       })
       .catch(err => {
-        console.log(err);
+        console.log('Error apiCall');
+        // console.log(err);
       })
   }
 

@@ -1,12 +1,46 @@
-
 // VM
 const {NodeVM} = require('vm2');
 
 let working = false;
+let global_remove_values = 255;
 
-function NextFrame(dmxValues) {
-    // io.emit('update', dmxValues)
-    process.send(dmxValues);
+function limited_subb (a, b) {
+  a -= b;
+  if ( a < 0 ) a = 0;
+  return a;
+}
+
+function limited_add (a, b) {
+  a += b;
+  if (a > 255) a = 255;
+  return a;
+}
+
+function remove_global(value) {
+  global_remove_values = limited_subb(global_remove_values, value);
+}
+
+function add_global(value) {
+  global_remove_values = limited_add(global_remove_values, value);
+}
+
+function NextFrame(dmxValuesIn) {
+  // io.emit('update', dmxValues)
+  let dmxValues = dmxValuesIn.slice();
+  for(let i = 0; i < 5; i++) {
+    for(let j = 0; j < 28; j++) {
+      let dmxRow = dmxValues[i][j].slice();
+
+      dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
+      dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
+      dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
+
+      dmxValues[i][j] = dmxRow;
+    }
+
+  }
+
+  process.send(dmxValues);
 }
 
 function GetKinect() {
@@ -54,7 +88,6 @@ function initNodeVM() {
    return vm;
 }
 
-
 function runCodeVM(code) {
   const vm = initNodeVM();
 
@@ -86,18 +119,41 @@ function runCodeVM(code) {
   }
 }
 
-process.on('message', message => {
+function fadeIn(time) {
+  const fadeInInterval = setInterval(() => {
+    remove_global(15);
+  }, 46);
 
-    if(message.type === 'STOP') {
-        // working = false;
-        process.exit(1);
-    }
-    else {
-        runCodeVM(message.code);
-    }
-    // process.send(message);
+  setTimeout(() => {
+    clearInterval(fadeInInterval);
+  }, 1500);
+}
+
+function fadeOut(time) {
+  const fadeOutInterval = setInterval(() => {
+    add_global(15);
+  }, 46);
+
+  setTimeout(() => {
+    clearInterval(fadeOutInterval);
+  }, 1500);  
+}
+
+process.on('message', message => {
+  switch(message.type) {
+    case 'FADE_IN':
+      break;
+    case 'FADE_OUT':
+      fadeOut(1000);
+      break;
+    case 'RUN':
+      working = true;
+      fadeIn(1000);
+      runCodeVM(message.code);
+      break;
+    case 'STOP':
+      working = false;
+      process.exit(1);
+      break;
+  }
 });
-  
-// process.on('end', message => {
-//     working = false;
-// });

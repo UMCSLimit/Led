@@ -56,6 +56,10 @@ export const modalHide = () => ({
   type: 'MODAL_HIDE'
 })
 
+export const modalReset = () => ({
+  type: 'MODAL_RESET'
+})
+
 export const emulatorRun = () => ({
   type: 'EMULATOR_RUN'
 })

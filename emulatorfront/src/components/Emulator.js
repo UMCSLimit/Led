@@ -77,11 +77,13 @@ class Emulator extends Component {
         })
 
         socket.on('update', (payload) => {
-            this.setState({values: payload});
+            if (this.props.liveMode)
+                this.setState({values: payload});
         });
 
         socket.on('queue', (queue) => {
-            this.props.queueChange([ queue.playing, ...queue.queue ]);
+            if (this.props.liveMode)
+                this.props.queueChange([ queue.playing, ...queue.queue ]);
         })
 
         let segments = this.generateSegments();
@@ -114,7 +116,7 @@ class Emulator extends Component {
     }
 
     ipcUpdate = (event, args) => {
-        // if (this.props.liveMode)
+        if (!this.props.liveMode)
             this.setState({values: args});
     }
 
@@ -183,12 +185,14 @@ class Emulator extends Component {
     buttonClick = () => {
         this.props.emulatorStop();
         ipcRenderer.send('off');
+
         // this.state.socket.emit('off');
     }
 
     runCode = () => {
         this.props.emulatorRun();
         ipcRenderer.send('code', this.props.code);
+        
         // this.state.socket.emit('code', this.props.code);
     }
 

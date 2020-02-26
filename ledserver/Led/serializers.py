@@ -17,8 +17,8 @@ class AnimationSerializer(serializers.ModelSerializer):
     # lang_name = serializers.CharField(source='id_lang')
     # type_name = serializers.CharField(source='id_type')
 
-    id_lang = LangSerializer()
-    id_type = TypeSerializer()
+    # id_lang = LangSerializer()
+    # id_type = TypeSerializer()
 
     class Meta:
         model = Animation

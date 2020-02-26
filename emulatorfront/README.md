@@ -15,7 +15,6 @@
 - [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
 - add my codes to tab
 - USOS / Kampus token like login for sending, get token, save token
-- Add queue logic to JSVMserver 
 
 ### Queue
 - null / usb / udp 
