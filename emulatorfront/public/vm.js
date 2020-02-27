@@ -24,28 +24,28 @@ function add_global(value) {
   global_remove_values = limited_add(global_remove_values, value);
 }
 
+let kinectValues = {x: 0, y: 0};
+
 function NextFrame(dmxValuesIn) {
-  let dmxValues = dmxValuesIn.slice();
-  for(let i = 0; i < 5; i++) {
-    for(let j = 0; j < 28; j++) {
-      let dmxRow = dmxValues[i][j].slice();
+  // let dmxValues = dmxValuesIn.slice();
+  // for(let i = 0; i < 5; i++) {
+  //   for(let j = 0; j < 28; j++) {
+  //     let dmxRow = dmxValues[i][j].slice();
+  //     dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
+  //     dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
+  //     dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
+  //     dmxValues[i][j] = dmxRow;
+  //   }
+  // }
 
-      dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
-      dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
-      dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
-
-      dmxValues[i][j] = dmxRow;
-    }
-
-  }
-
-  process.send({type: 'UPDATE', values: dmxValues});
+  process.send({type: 'UPDATE', values: dmxValuesIn});
 }
 
 function GetKinect() {
   // let mousePos = electron.screen.getCursorScreenPoint();
   // return mousePos;
-  return [300, 400];
+  // return {x: 800, y: 100};
+  return kinectValues;
 }
 
 function ifWorking() {
@@ -143,9 +143,12 @@ process.on('message', message => {
     case 'FADE_OUT':
       fadeOut(1000);
       break;
+    case 'KINECT':
+      kinectValues.x = message.x;
+      kinectValues.y = message.y;
     case 'RUN':
       working = true;
-      fadeIn(1000);
+      // fadeIn(1000);
       runCodeVM(message.code);
       break;
     case 'STOP':
