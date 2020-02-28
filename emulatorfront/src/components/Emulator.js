@@ -183,7 +183,7 @@ class Emulator extends Component {
     }
 
     buttonClick = () => {
-        this.props.emulatorStop();
+        // this.props.emulatorStop();
         ipcRenderer.send('off');
 
         // this.state.socket.emit('off');

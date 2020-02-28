@@ -1,22 +1,18 @@
 const electron = require('electron');
 const app = electron.app;
-const BrowserWindow = electron.BrowserWindow;
-const path = require('path');
-const isDev = require('electron-is-dev');
-var log = require('electron-log');
-const { ipcMain } = require('electron');
-const electronLocalshortcut = require('electron-localshortcut');
-const jetpack = require('fs-jetpack');
 const dialog = electron.dialog;
-const { fork } = require('child_process');
+const BrowserWindow = electron.BrowserWindow;
+const isDev = require('electron-is-dev');
+const electronLocalshortcut = require('electron-localshortcut');
+var log = require('electron-log');
+const path = require('path');
+const { ipcMain } = require('electron');
+const jetpack = require('fs-jetpack');
+const { NodeVM } = require('vm2');
+var _ = require('lodash');
+// const Menu = electron.Menu;
 // var socket = require('socket.io');
 // var io = socket(3002);
-// const {NodeVM, VM, VMScript} = require('vm2');
-// const Menu = electron.Menu;
-// const axios = require('axios');
-// const {dialog} = require('electron').remote;
-// var remote = require('remote');
-// var dialog = remote.require('electron').dialog;
 
 let mainWindow = null;
 
@@ -45,17 +41,17 @@ function createWindow() {
     mainWindow.webContents.send('save');
   });
 
-//   var menu = Menu.buildFromTemplate([
-//     {
-//         label: 'Menu',
-//         submenu: [
-//             {label:'Adjust Notification Value'},
-//             {label:'CoinMarketCap'},
-//             {label:'Exit'}
-//         ]
-//     }
-// ])
-// Menu.setApplicationMenu(menu); 
+  //   var menu = Menu.buildFromTemplate([
+  //     {
+  //         label: 'Menu',
+  //         submenu: [
+  //             {label:'Adjust Notification Value'},
+  //             {label:'CoinMarketCap'},
+  //             {label:'Exit'}
+  //         ]
+  //     }
+  // ])
+  // Menu.setApplicationMenu(menu); 
 }
 
 app.on('ready', createWindow);
@@ -72,16 +68,6 @@ app.on('activate', () => {
   }
 });
 
-// io.on('connection', (socket) => {
-//   log.info('connected..')
-//   socket.on('code', (code) => {
-//     runCodeVM(code)
-//   })
-//   socket.on('off', () => {
-//     working = false;
-//   })
-// })
-
 // -------------------------------------------------
 // IPC MAIN
 ipcMain.on('save', (event, arg) => {
@@ -92,66 +78,50 @@ ipcMain.on('save', (event, arg) => {
       {name: 'Javascript', extensions: ['js']}
     ]
   });
-  jetpack.write(path, arg);
-});
-
-ipcMain.on('saveTmp', (event, arg) => {
+  if (path !== '' && path !== undefined) {
+    jetpack.write(path, arg);
+  } else {
+    log.info('No path has been selected');
+  }
 });
 
 // ipcMain.on('lastEdited', (event, arg) => {
 // });
 
+ipcMain.on('code', (event, arg) => {
+  runCodeVM(arg);
+});
 
-// VM
-const {NodeVM} = require('vm2');
+ipcMain.on('off', (event, arg) => {
+  working = false;
+  mainWindow.webContents.send('stop');
+}); 
 
+// -------------------------------------------------
+// NODEVM
 let working = false;
-let global_remove_values = 255;
 
-function limited_subb (a, b) {
-  a -= b;
-  if ( a < 0 ) a = 0;
-  return a;
+function ConvertToDMX(values) {
+  let dmxValues = {};
+  let id = 0;
+  for(let i = 4; i >= 0; i--) {
+    for(let j = 27; j >= 0; j--, id += 3) {
+      dmxValues[id] = values[i][j][0];
+      dmxValues[id+1] = values[i][j][1];
+      dmxValues[id+2] = values[i][j][2];
+    }
+  }
+  return dmxValues;
 }
 
-function limited_add (a, b) {
-  a += b;
-  if (a > 255) a = 255;
-  return a;
-}
-
-function remove_global(value) {
-  global_remove_values = limited_subb(global_remove_values, value);
-}
-
-function add_global(value) {
-  global_remove_values = limited_add(global_remove_values, value);
-}
-
-let kinectValues = {x: 0, y: 0};
-
-function NextFrame(dmxValuesIn) {
-  // let dmxValues = dmxValuesIn.slice();
-  // for(let i = 0; i < 5; i++) {
-  //   for(let j = 0; j < 28; j++) {
-  //     let dmxRow = dmxValues[i][j].slice();
-  //     dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
-  //     dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
-  //     dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
-  //     dmxValues[i][j] = dmxRow;
-  //   }
-  // }
-
-  mainWindow.webContents.send('update', dmxValuesIn);  
-
-  // process.send({type: 'UPDATE', values: dmxValuesIn});
+function NextFrame(values) {
+  mainWindow.webContents.send('update', values);
+  // console.log(ConvertToDMX(values));
 }
 
 function GetKinect() {
   let mousePos = electron.screen.getCursorScreenPoint();
   return mousePos;
-  // return {x: 800, y: 100};
-  // return kinectValues;
 }
 
 function ifWorking() {
@@ -171,8 +141,7 @@ function initValues() {
 }
 
 function getError(err) {
-    // process.send({type: 'ERROR', error: err});
-    mainWindow.webContents.send('error', err);  
+  mainWindow.webContents.send('error', err);  
 }
 
 function initNodeVM() {
@@ -196,7 +165,6 @@ function initNodeVM() {
 function runCodeVM(code) {
   const vm = initNodeVM();
   vm.on('console.log', (data) => {
-    // process.send({type: 'LOG', log: data});
     mainWindow.webContents.send('log', data);  
   });
 
@@ -220,84 +188,6 @@ function runCodeVM(code) {
     vm.run(code, '_vm.js')
   }
   catch(error) {
-    // process.send({type: 'ERROR', error: error.message});
     mainWindow.webContents.send('error', error.message);  
   }
 }
-
-// function fadeIn(time) {
-//   const fadeInInterval = setInterval(() => {
-//     remove_global(15);
-//   }, 46);
-
-//   setTimeout(() => {
-//     clearInterval(fadeInInterval);
-//   }, 1500);
-// }
-
-// function fadeOut(time) {
-//   const fadeOutInterval = setInterval(() => {
-//     add_global(15);
-//   }, 46);
-
-//   setTimeout(() => {
-//     clearInterval(fadeOutInterval);
-//   }, 1500);  
-// }
-
-// process.on('message', message => {
-//   switch(message.type) {
-//     case 'FADE_IN':
-//       break;
-//     case 'FADE_OUT':
-//       fadeOut(1000);
-//       break;
-//     case 'KINECT':
-//       kinectValues.x = message.x;
-//       kinectValues.y = message.y;
-//     case 'RUN':
-//       working = true;
-//       // fadeIn(1000);
-//       runCodeVM(message.code);
-//       break;
-//     case 'STOP':
-//       process.exit(1);
-//   }
-// });
-
-// let vmCode = null;
-
-ipcMain.on('code', (event, arg) => {
-  runCodeVM(arg);
-
-  // vmCode = fork('public/vm.js');
-  // vmCode.send({ type: 'RUN', code: arg });
-  // vmCode.on('message', message => {    
-  //   switch (message.type) {
-  //     case 'UPDATE':
-  //       mainWindow.webContents.send('update', message.values);
-  //       break;
-  //       case 'LOG':
-  //         mainWindow.webContents.send('log', message.log);
-  //         break;
-  //         case 'ERROR':
-  //           mainWindow.webContents.send('error', message.error);
-  //       break;
-  //     }
-
-      // REDIS !!!
-      
-      // let mousePos = electron.screen.getCursorScreenPoint();
-  // return mousePos;
-      // vmCode.send({type: 'KINECT', x: mousePos.x, y:mousePos.y});
-      // const outputValues = convert(message);
-    // console.log(outputValues);
-    // dmx.update(universeName, outputValues);
-  // })
-});
-
-ipcMain.on('off', (event, arg) => {
-  working = false;
-  // if (vmCode !== null) 
-  //   vmCode.kill("SIGKILL");
-}); 

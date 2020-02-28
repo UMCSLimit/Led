@@ -4,12 +4,14 @@
 ## To do
 
 ### Main
-- convert values [[[0, 0, 0], [255, 255, 255] ...]] to {0: 0, 1: 255, 2: ... }
-- (BUG) values[x][y] = [255, 0, 0]  ----   [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
+- [✔] convert values [[[0, 0, 0], [255, 255, 255] ...]] to {0: 0, 1: 255, 2: ... }
+- [✔] (BUG) values[x][y] = [255, 0, 0]  ----   [255, 0, 0] -> {0: 255, 1: 0, 2: 0} FIX - js array gives reference doesnt copy 
+- Somehow copy [255, 255, 0] (common function can fix this [lower task])
 - add functions that are commonly used, such as setRow, setColumn etc.
+- [✔] on IPC 'stop' change button state
 - add my codes to list of codes
 - make saving automatic, easy title, no looking for files on disc. Always in one place
-- admin mode for emualtor, we can easily verify codes etc
+- admin mode for emulator, we can easily verify codes etc
 - USOS / Kampus token like login for sending, get token, save token
 - cubic Bézier curves in vm (https://medium.com/better-programming/smooth-scrolling-with-javascript-a4cd787e447f)
 - find a animation js library to add to vm
@@ -38,7 +40,7 @@
 - load from local file
 - Menu
 1. save / save as / load / new 
-- add small local database for last files etc
+- add small local database for last files etc (https://github.com/kripken/sql.js/)
 
 ### Queue
 - (BUG) Fade in / Fade out overwrites dmxValues (values) => FIX this by making a local copy
@@ -48,6 +50,7 @@
 
 ### Design
 - svg design
+- on segment hover show x, y, color (if segement is not on instutute, give additional infomation)
 - live mode button with gradient background (https://codepen.io/Katiae/pen/wdXpOY)
 - kinect / dmx icons
 - When live animate in little people
@@ -56,8 +59,8 @@
 - segments that dont work, add onhover information
 
 ### package.json
-- add electron-dev-windows with (SET ... & npm ... )
-- update react-scripts to 3.4.0
+- [✔] add electron-dev-windows with (SET ... & npm ... )
+- [✔] update react-scripts to 3.4.0
 
 ## .env (Not implemented yet)
 REST_BACKEND_URL=
