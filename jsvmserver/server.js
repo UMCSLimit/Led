@@ -17,7 +17,7 @@ if (!noDev) {
   devType = 'enttec-open-usb-dmx';
   devName = '/dev/ttyUSB0';
 }
-let universe = dmx.addUniverse(universeName, devType, devName);
+// let universe = dmx.addUniverse(universeName, devType, devName);
 
 // const process = require('process');
 const { fork } = require('child_process');
@@ -37,6 +37,23 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log(`Server running at: http://localhost:${PORT}/`);
 });
+
+const redis = require('redis');
+const client = redis.createClient({
+  port: 6379,
+  host: '127.0.0.1',
+  password: ''
+})
+
+const vmCode = fork('vm.js');
+vmCode.send({ type: 'RUN', code: `async function loop() { for(let i = 0; i < 28; i++){for(let j = 0; j < 5; j++){values[j][i][1] = 255;values[j][i][0] = 255;values[j][i][2] = 255;await sleep(100); NextFrame();}} }` });
+
+const nextFrameInterval = setInterval(() => {
+  // console.log(123);
+  client.get('dmx', (err, reply) => {
+    console.log(reply);
+  })
+}, 100);
 
 // Socket end points
 
@@ -129,15 +146,23 @@ class MainQueue {
     const vmCode = fork('vm.js');
 
     vmCode.send({ type: 'RUN', code: code });
-    vmCode.on('message', message => {
+
+    // const nextFrameInterval = setInterval(() => {
+    //   console.log(123);
+    //   client.get('dmx', (err, reply) => {
+    //     console.log(reply);
+    //   })
+    // }, 46);
+
+    // vmCode.on('message', message => {
       // console.log(message);
       // Nie mamy dostepu do socketa tutaj
-      io.emit('update', message);
+      // io.emit('update', message);
 
       // const outputValues = convert(message);
       // console.log(outputValues);
       // dmx.update(universeName, outputValues);
-    })
+    // })
 
     const codeTime = 5000;
 
@@ -154,6 +179,8 @@ class MainQueue {
       // We wait y milliseconds for the code to stop
       setTimeout(() => {
         
+        clearInterval(nextFrameInterval);
+
         vmCode.kill("SIGKILL");
         console.log(`Waited 1000 milliseconds for playing new code`);
         // We repeat the proccess here
@@ -212,5 +239,5 @@ sendQueue = (queue) => {
 // - new animation is added when randomed from backend
 // ----- End Queue -----
 
-const mainQueue = new MainQueue(sendQueue);
-mainQueue.start();
+// const mainQueue = new MainQueue(sendQueue);
+// mainQueue.start();

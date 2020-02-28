@@ -171,7 +171,8 @@ function initValues() {
 }
 
 function getError(err) {
-    process.send({type: 'ERROR', error: err});
+    // process.send({type: 'ERROR', error: err});
+    mainWindow.webContents.send('error', err);  
 }
 
 function initNodeVM() {
@@ -196,6 +197,7 @@ function runCodeVM(code) {
   const vm = initNodeVM();
   vm.on('console.log', (data) => {
     // process.send({type: 'LOG', log: data});
+    mainWindow.webContents.send('log', data);  
   });
 
   working = true;
@@ -219,7 +221,7 @@ function runCodeVM(code) {
   }
   catch(error) {
     // process.send({type: 'ERROR', error: error.message});
-
+    mainWindow.webContents.send('error', error.message);  
   }
 }
 

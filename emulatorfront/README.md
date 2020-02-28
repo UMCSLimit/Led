@@ -4,35 +4,62 @@
 ## To do
 
 ### Main
-- in redux add axios + ipc + socket
-- add .env file [ backend_url, if_electron, if_socket etc. ]
-- last saved -> to redux
-- load from local file 
-- check if file is opened or new
+- convert values [[[0, 0, 0], [255, 255, 255] ...]] to {0: 0, 1: 255, 2: ... }
+- (BUG) values[x][y] = [255, 0, 0]  ----   [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
+- add functions that are commonly used, such as setRow, setColumn etc.
+- add my codes to list of codes
 - make saving automatic, easy title, no looking for files on disc. Always in one place
-- make process for while(true){} 
-- values[x][y] = [255, 0, 0] doesnt work
-- [255, 0, 0] -> {0: 255, 1: 0, 2: 0}
-- add my codes to tab
+- admin mode for emualtor, we can easily verify codes etc
 - USOS / Kampus token like login for sending, get token, save token
+- cubic Bézier curves in vm (https://medium.com/better-programming/smooth-scrolling-with-javascript-a4cd787e447f)
+- find a animation js library to add to vm
+- change name to CodeMyInstitute
+
+### [ ledserver ] <=> [ jsvmserver ]
+#### Make connection secure!
+- send admin token 
+
+### Redux
+- add Axios api calls
+- last saved codes 
+- add socket for live mode
+- add ipc for local mode
+
+### IPC communication
+- add load code 
+- add save code (not save as)
+- add last saved codes
 
 ### Electron
-- Rozdzielenie na pliki 
-- 1. plik IPC communication ? 
-- 2. plik Menu
+#### VM not as a fork (process), to slow, no one will want to install redis
+- Convert to multiple files
+1. file IPC communication
+2. file Menu
+- load from local file
+- Menu
+1. save / save as / load / new 
+- add small local database for last files etc
 
 ### Queue
-- null / usb / udp 
+- (BUG) Fade in / Fade out overwrites dmxValues (values) => FIX this by making a local copy
+- If no internet or communication, add to queue a default animation
+- (BUG) If ledserver stops working during the queue, it crashes => FIX this by checking if queue length is 0, if so, add a default animation
+- if error is thrown, send request to django (as an admin) that it is not verified and add it to error_codes table
 
 ### Design
-- live mode button with gradient background
 - svg design
+- live mode button with gradient background (https://codepen.io/Katiae/pen/wdXpOY)
 - kinect / dmx icons
 - When live animate in little people
-- add loader from bulma with icon from dribbble
-- highlight segments that dont work, add onhover information
+- bulma dark theme (https://jenil.github.io/bulmaswatch/help/)
+- add loader from bulma with icon from dribbble (https://dribbble.com/shots/9776794-Baby-editor)
+- segments that dont work, add onhover information
 
-## .env
+### package.json
+- add electron-dev-windows with (SET ... & npm ... )
+- update react-scripts to 3.4.0
+
+## .env (Not implemented yet)
 REST_BACKEND_URL=
 REST_BACKEND_PORT=
 

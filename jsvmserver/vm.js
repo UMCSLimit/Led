@@ -4,6 +4,13 @@ const {NodeVM} = require('vm2');
 let working = false;
 let global_remove_values = 255;
 
+const redis = require('redis');
+const client = redis.createClient({
+  port: 6379,
+  host: '127.0.0.1',
+  password: ''
+})
+
 function limited_subb (a, b) {
   a -= b;
   if ( a < 0 ) a = 0;
@@ -25,22 +32,20 @@ function add_global(value) {
 }
 
 function NextFrame(dmxValuesIn) {
+
+  client.set('dmx', JSON.stringify(dmxValuesIn));
   // io.emit('update', dmxValues)
-  let dmxValues = dmxValuesIn.slice();
-  for(let i = 0; i < 5; i++) {
-    for(let j = 0; j < 28; j++) {
-      let dmxRow = dmxValues[i][j].slice();
-
-      dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
-      dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
-      dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
-
-      dmxValues[i][j] = dmxRow;
-    }
-
-  }
-
-  process.send(dmxValues);
+  // let dmxValues = dmxValuesIn.slice();
+  // for(let i = 0; i < 5; i++) {
+  //   for(let j = 0; j < 28; j++) {
+  //     let dmxRow = dmxValues[i][j].slice();
+  //     dmxRow[0] = limited_subb(dmxRow[0], global_remove_values);
+  //     dmxRow[1] = limited_subb(dmxRow[1], global_remove_values);
+  //     dmxRow[2] = limited_subb(dmxRow[2], global_remove_values);
+  //     dmxValues[i][j] = dmxRow;
+  //   }
+  // }
+  // process.send(dmxValues);
 }
 
 function GetKinect() {
@@ -93,6 +98,7 @@ function runCodeVM(code) {
 
   vm.on('console.log', (data) => {
     // io.emit('log', data);
+    // console.log(data);
   });
 
   working = true;
